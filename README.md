@@ -1,6 +1,6 @@
 # ApiRescue
 
-This is a gem designed to be used in a Rails 4.x application. It enables DRY, simple controllers leveraging `ActiveRecord`'s `!` methods by automatically rescuing from common errors, i.e. `ActiveRecord::RecordNotFound`.  Also provides a handy `#error` method to send errors (i.e. unexpected conditions) to the end user.
+This is a gem designed to be used in a Rails 4.x application which contains APIs. It enables DRY, simple controllers leveraging `ActiveRecord`'s `!` methods by automatically rescuing from common errors, i.e. `ActiveRecord::RecordNotFound`.  Also provides a handy `#error` method to send errors (i.e. unexpected conditions) to the end user.
 
 ## Installation & Usage
 

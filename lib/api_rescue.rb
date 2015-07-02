@@ -106,7 +106,7 @@ module ApiRescue
 
   # @param exception [ActiveRecord::RecordInvalid] the error
   def rescue_record_invalid(exception)
-    log.error exception
+    log.error exception if defined?(log)
     render partial: 'api_rescue/record_invalid',
            locals: { exception: exception },
            status: :unprocessable_entity
@@ -114,9 +114,12 @@ module ApiRescue
 
   # Handles rescuing of an api error from the {#error} method
   def rescue_api_error(exception)
-    log.error "ERROR: #{exception.status} #{exception.code} | #{exception.message} " \
-      ": #{exception.details}"
-    log.error exception
+    if defined?(log)
+      log.error "ERROR: #{exception.status} #{exception.code} | #{exception.message} " \
+        ": #{exception.details}"
+      log.error exception
+    end
+
     render partial: 'api_rescue/api_error',
            locals: { exception: exception },
            status: exception.status

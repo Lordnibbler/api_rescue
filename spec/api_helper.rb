@@ -1,34 +1,4 @@
-# Configure Rails Environment
-ENV["RAILS_ENV"] = "test"
-
-require File.expand_path('../../test/dummy/config/environment.rb',  __FILE__)
-require 'rails/test_help'
-require 'minitest/autorun'
-require 'minitest/pride'
-
-# Filter out Minitest backtrace while allowing backtrace from other libraries
-# to be shown.
-Minitest.backtrace_filter = Minitest::BacktraceFilter.new
-
-# Load support files
-Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
-
-# Load fixtures from the engine
-if ActiveSupport::TestCase.respond_to?(:fixture_path=)
-  ActiveSupport::TestCase.fixture_path = File.expand_path("../fixtures", __FILE__)
-  ActiveSupport::TestCase.fixtures :all
-end
-
-
-# Returns the parsed JSON wrapped in StrongParameters
-def json
-  if response.content_type == 'application/json'
-    @last_json = JSONParams.new(JSON.parse(response.body)) if @last_body != response.body
-    @last_body = response.body
-    return @last_json
-  end
-  fail 'Response did not return an application/json type!'
-end
+require 'rails_helper'
 
 # Makes testing JSON easy!
 #
@@ -147,4 +117,64 @@ class JSONParams < ActionController::Parameters
   def to_s
     JSON.pretty_generate to_hash
   end
+end
+
+RSpec.configure do |config|
+  config.include Rails.application.routes.url_helpers
+
+  # Print JSON to stderr if the test did not pass
+  config.after :each do |example|
+    if example.exception.present? && defined?(response)
+      $stderr.puts 'Test failed; response JSON:\n' + json.to_s
+    end
+  end
+
+  # Returns the parsed JSON wrapped in StrongParameters
+  def json
+    if response.content_type == 'application/json'
+      @last_json = JSONParams.new(JSON.parse(response.body)) if @last_body != response.body
+      @last_body = response.body
+      return @last_json
+    end
+    fail 'Response did not return an application/json type!'
+  end
+
+  # Prints out Ruby comments that you can copy and paste into your controllers
+  # rubocop:disable Output
+  #
+  def document!
+    # Request params
+    params = request.params
+    # Remove extra crud from request params
+    p = request.params.dup
+    [:controller, :action, :format, :id].each { |k| p.delete k }
+
+    puts "Here is some Ruby comments to put in your controllers
+    (#{params[:controller]}##{params[:action]}):"
+
+    puts
+    puts '# ' +
+             request.method.to_s.upcase +
+             ' ' +
+             url_for(params.slice(:controller, :action, :id).merge(only_path: true))
+    puts '#'
+
+    # Note about a required auth header
+    unless request.authorization.blank?
+      puts '# @example Authorization Header'
+      puts "#   Authorization: #{request.authorization}"
+    end
+
+    # Sample request parameters, if any
+    if p.any?
+      puts '# @example Sample Request Parameters'
+      str = JSON.pretty_generate(p.to_hash)
+      puts str.split("\n").map { |j| "#   #{j}" }.join("\n")
+    end
+
+    # Finally, response JSON
+    puts '# @example Sample Response Parameters'
+    puts json.to_s.split("\n").map { |j| "#   #{j}" }.join("\n")
+  end
+  # rubocop:enable Output
 end
