@@ -85,6 +85,11 @@ module ApiRescue
   # @example Error Codes
   #   error 'Token Expired', status: :unauthorized, code: 'token_expired'
   #
+  # @param message [String] a short and sweet error message
+  # @param status [Fixnum] the HTTP status code you wish to respond with
+  # @param code [String] (optional) unique identifying code for this error
+  # @param details [String] (optional) more flushed out details about why the error occurred, how to troubleshoot, etc
+  #
   def error(message, status: 500, code: nil, details: nil)
     exception = ApiError.new message, status: status, code: code, details: details
     fail exception

@@ -9,7 +9,7 @@ This is a gem designed to be used in a Rails 4.x application which contains APIs
 1. Add the gem to your `Gemfile`
 
     ```ruby
-    gem 'api_rescue'
+    gem 'api_rescue', github: 'lordnibbler/api_rescue'
     ```
 
 2. Run `bundle`
@@ -24,7 +24,8 @@ This is a gem designed to be used in a Rails 4.x application which contains APIs
   end
   ```
 
-4. Now, your controller methods can go from this:
+### DRY Controller Methods
+Now, your controller methods can go from this:
 
   ```ruby
   def update
@@ -47,6 +48,43 @@ This is a gem designed to be used in a Rails 4.x application which contains APIs
     @user.update_attributes!(params[:user])
   end
   ```
+
+### `error()` method
+
+Any controller that mixes in `ApiRescue` can invoke a call to the `error()` method. This method will instantiate a new `ApiError` exception, and `raise` it, thus invoking the `rescue_from ApiError` logic in this gem.
+
+The `error()` method accepts several params as [documented in the source](lib/api_rescue.rb).
+
+Example request/response:
+
+```ruby
+# invoking error in your controller
+error(
+  'Hello World',
+  status: 404,
+  code: 'hello_world_not_found',
+  details: 'Hello. The world was not found.'
+)
+
+# builds a JSON response (represented as a Ruby Hash here):
+{
+  "error" => "hello world",
+  "code" => "hello_world_not_found",
+  "details" => "The hello world was not found. please try again.",
+  "exception" => {
+    "message" => "hello world",
+    "class_name" => "ApiRescue::ApiError",
+    "backtrace" => [
+      "/Users/turtle/Code/gems/api_rescue/lib/api_rescue.rb:95:in `error'",
+      # ...
+    ]
+  }
+}
+```
+
+### Overriding Views
+
+You can override any of this gem's [default views](app/views/api_rescue) by copying these views to your `/app/views/api_rescue` directory in your Rails application.
 
 ## License
 This project rocks and uses MIT-LICENSE.
