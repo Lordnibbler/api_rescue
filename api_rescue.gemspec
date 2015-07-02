@@ -9,9 +9,9 @@ Gem::Specification.new do |s|
   s.version     = ApiRescue::VERSION
   s.authors     = ['Ben Radler']
   s.email       = ['benradler@me.com']
-  s.homepage    = 'TODO'
-  s.summary     = 'TODO: Summary of ApiRescue.'
-  s.description = 'TODO: Description of ApiRescue.'
+  s.homepage    = 'http://github.com/lordnibbler/api_rescue'
+  s.summary     = 'Awesome DRY API library'
+  s.description = ''
   s.license     = 'MIT'
 
   s.files = Dir['{app,config,db,lib}/**/*', 'MIT-LICENSE', 'Rakefile', 'README.md']
