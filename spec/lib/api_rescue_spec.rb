@@ -14,15 +14,16 @@ describe ApiRescue, type: :controller do
 
   # We use rescue_default with the Exception class
   describe '.rescue_default' do
-    it 'renders the error message with the correct status code' do
+    before do
       get :index
+    end
 
+    it 'renders the error message with the correct status code' do
       expect(json[:error]).to eq('Caught the exception')
       expect(response.code.to_i).to eq(500)
     end
 
     it 'displays the backtrace with cause' do
-      get :index
       expect(json[:exception]).to be_present
       expect(json[:exception][:backtrace]).to be_an(Array)
       expect(json[:exception][:cause]).to be_present
@@ -49,6 +50,7 @@ describe ApiRescue, type: :controller do
   describe '#rescue_api_error' do
     controller do
       include ApiRescue
+
       def index
         error(
           'hello world',
@@ -59,28 +61,27 @@ describe ApiRescue, type: :controller do
       end
     end
 
-    it 'returns the correct status code' do
+    before do
       get :index
+    end
+
+    it 'returns the correct status code' do
       expect(response.status.to_i).to eq(404)
     end
 
     it 'displays the correct error' do
-      get :index
       expect(json[:error]).to eq('hello world')
     end
 
     it 'returns the exception details' do
-      get :index
       expect(json[:exception]).to be_present
     end
 
     it 'returns the code' do
-      get :index
       expect(json[:code]).to eql('hello_world_not_found')
     end
 
     it 'returns details' do
-      get :index
       expect(json[:details]).to eql('The hello world was not found. please try again.')
     end
   end
@@ -88,28 +89,30 @@ describe ApiRescue, type: :controller do
   describe '#rescue_record_invalid' do
     controller do
       include ApiRescue
+
       def index
         User.create!
       end
     end
 
+    let(:user) { User.new }
+    let(:errors) { user.errors }
+
     before do
-      @user = User.new
-      @user.valid?
-      @errors = @user.errors
+      user.valid?
+      get :index
     end
 
     it 'returns an unprocessable entity' do
-      get :index
       expect(response.code.to_i).to eq(422)
     end
 
     it 'displays a "validation" key' do
-      get :index
       expect(json[:error]).to start_with('Validation failed:')
       expect(json[:details]).to start_with('The data you submitted is invalid.')
       expect(json[:validation]).to be_a(Hash)
-      expect(json[:validation]).to eq(@errors.messages.stringify_keys)
+      expect(json[:validation].keys.count).to be > 0
+      expect(json[:validation]).to eq(errors.messages.stringify_keys)
     end
   end
 end
